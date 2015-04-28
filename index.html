@@ -1,0 +1,77 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>JSCraftEd</title>
+  <meta name="description" content="JSCraftEd">
+  <meta name="author" content="Iuval">
+
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <div id="option-panel">
+    <table id="controls">
+      <tbody>
+        <tr>
+          <td colspan="2">
+            <input type="button" value="Play" onclick="Game.initialize()">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label for="bounds">this.bounds</label>
+          </td>
+          <td>
+            <span id="bounds">{x, y} limits of the canvas</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="editor-container">
+var speedX = Math.floor((Math.random() * 10) - 5);
+var speedY = Math.floor((Math.random() * 10) - 5);
+var bounds = Game.bounds();
+
+this.update = function() {
+  if (this.x < 20 || this.x > bounds.width - 20) {
+    speedX = -speedX;
+  }
+   if (this.y < 20 || this.y > bounds.height - 20) {
+    speedY = -speedY;
+  }
+  this.x += speedX;
+  this.y += speedY;
+};
+  </div>
+  <canvas id="viewport" width="640px" height="480px"></canvas>
+  <div id="log"></div>
+
+  <script src="js/vendor/jquery-1.11.2.min.js"></script>
+  <script src="js/ace/src/ace.js"></script>
+  <script src="js/ace/src/mode-javascript.js"></script>
+  <script>
+    var editor = ace.edit("editor-container");
+    var JavaScriptMode = ace.require("ace/mode/javascript").Mode;
+    editor.getSession().setMode(new JavaScriptMode());
+    editor.commands.addCommand({
+      name: 'PlayCommand',
+      bindKey: { win: "Ctrl-S", mac: "Command-S" },
+      exec: function(editor) {
+        Game.initialize();
+      }
+    });
+  </script>
+
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/log.js"></script>
+</body>
+</html>

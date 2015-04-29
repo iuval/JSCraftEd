@@ -31,10 +31,10 @@
         </tr>
         <tr>
           <td>
-            <label for="bounds">this.bounds</label>
+            <label for="help">Help</label>
           </td>
           <td>
-            <span id="bounds">{x, y} limits of the canvas</span>
+            <span id="help">Soon :D</span>
           </td>
         </tr>
       </tbody>
@@ -44,13 +44,23 @@
 var speed = 1,
     bounds = Game.bounds();
 
-this.update = function() {
-  if (this.x == bounds.left || this.x == bounds.right) {
-    speed = -speed;
-  }
+lookAt("right");
 
-  moveX(speed);
+this.update = function() {
+    if (this.x == bounds.left || this.x == bounds.right) {
+        turnArround();
+    }
+
+    move(speed);
 };
+
+function turnArround() {
+    if (this.direction == "left") {
+        lookAt("right");
+    } else if (this.direction == "right") {
+        lookAt("left");
+    }
+}
   </div>
   <canvas id="viewport" width="640px" height="480px"></canvas>
   <div id="log"></div>

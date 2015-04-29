@@ -117,8 +117,22 @@ Game.bindScale = function(context) {
 }
 
 Game.insideBoard = function(x, y) {
-  if (x > this._boardBounds["right"] || x < this._boardBounds["left"]) {
+  if (!Game.insideBoardQuiet(x,y )) {
     Game.stop();
     console.error("Player is out of the board");
+  }
+}
+
+Game.insideBoardQuiet = function(x, y) {
+  return x <= this._boardBounds["right"] || x >= this._boardBounds["left"]
+}
+
+Game.itemAt = function(x, y) {
+  if (insideBoardQuiet(x, y)) {
+    switch (this.items[x][y]) {
+      case "0" : return "none";
+      case "E" : return "enemy";
+      case "R" : return "rock";
+    }
   }
 }

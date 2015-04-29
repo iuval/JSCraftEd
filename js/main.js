@@ -1,4 +1,6 @@
 Game.load(function() {
+  $("#page_loader").fadeOut();
+
   var loop = (function() {
     var loops = 0, skipTicks = 1000 / Game.fps,
         maxFrameSkip = 10,

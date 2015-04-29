@@ -3,9 +3,10 @@ if (typeof console  != "undefined")
     console.olog = console.log;
   else
     console.olog = function() {};
-
+var logArea = $('#log');
 console.log = function(message) {
   console.olog(message);
-  $('#log').append('<p>' + message + '</p>');
+  logArea.append('<p>' + message + '</p>');
+  logArea.animate({scrollTop: logArea.scrollHeight}, 200);
 };
 console.error = console.debug = console.info = console.log

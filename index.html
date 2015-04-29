@@ -16,12 +16,17 @@
 </head>
 
 <body>
+  <div id="page_loader">
+    <img src="img/loading.gif"></img>
+    <span>Loading...</span>
+  </div>
+
   <div id="option-panel">
     <table id="controls">
       <tbody>
         <tr>
           <td colspan="2">
-            <input type="button" value="Play" onclick="Game.initialize()">
+            <input type="button" value="Play" onclick="Game.initialize(0)">
           </td>
         </tr>
         <tr>
@@ -36,19 +41,15 @@
     </table>
   </div>
   <div id="editor-container">
-var speedX = Math.floor((Math.random() * 10) - 5);
-var speedY = Math.floor((Math.random() * 10) - 5);
-var bounds = Game.bounds();
+var speed = 1,
+    bounds = Game.bounds();
 
 this.update = function() {
-  if (this.x < 20 || this.x > bounds.width - 20) {
-    speedX = -speedX;
+  if (this.x == bounds.left || this.x == bounds.right) {
+    speed = -speed;
   }
-   if (this.y < 20 || this.y > bounds.height - 20) {
-    speedY = -speedY;
-  }
-  this.x += speedX;
-  this.y += speedY;
+
+  moveX(speed);
 };
   </div>
   <canvas id="viewport" width="640px" height="480px"></canvas>
@@ -65,11 +66,12 @@ this.update = function() {
       name: 'PlayCommand',
       bindKey: { win: "Ctrl-S", mac: "Command-S" },
       exec: function(editor) {
-        Game.initialize();
+        Game.initialize(0);
       }
     });
   </script>
 
+  <script src="js/levels.js"></script>
   <script src="js/game.js"></script>
   <script src="js/main.js"></script>
   <script src="js/log.js"></script>

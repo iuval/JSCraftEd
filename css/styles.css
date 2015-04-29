@@ -5,7 +5,7 @@ html {
 }
 
 body {
-  overflow: hidden;
+  /*overflow: hidden;*/
   margin: 0;
   padding: 0;
   height: 100%;
@@ -14,6 +14,16 @@ body {
   font-size: 12px;
   background: rgb(0, 102, 153);
   color: white;
+}
+
+#page_loader {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgb(0, 102, 153);
+  z-index: 99;
 }
 
 #option-panel {
@@ -57,8 +67,8 @@ body {
 #log {
   position: absolute;
   top: 80%;
-  left: 500%;
+  left: 50%;
   bottom: 0px;
-  right: 0;
+  right: 0px;
   background: black;
 }

@@ -34,10 +34,10 @@ function Player(x, y) {
       _wrapper.draw(context, offset_x, offset_y);
     },
     x: function() {
-      _wrapper.x;
+      return _wrapper.x;
     },
     y: function() {
-      _wrapper.y;
+      return _wrapper.y;
     }
   }
 };

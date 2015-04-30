@@ -94,7 +94,8 @@ function turnArround() {
 
     function StartGame() {
       $("#page_loader").fadeIn();
-      Game.initialize(getURLParameter("e"));
+      var ex = getURLParameter("e") || "0";
+      Game.initialize(ex);
     }
   </script>
 

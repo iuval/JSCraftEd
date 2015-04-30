@@ -11,18 +11,18 @@ function PlayerWrapper(x, y) {
     },
     move: function() {
       switch (this.direction) {
-        case "up" : { this.y += 1; break; }
-        case "down" : { this.y -= 1; break; }
+        case "up" : { this.y -= 1; break; }
+        case "down" : { this.y += 1; break; }
         case "right" : { this.x += 1; break; }
         case "left" : { this.x -= 1; break; }
       }
-      Game.insideBoard(this.x, this.y);
+      Game.isSpaceFree(this.x, this.y);
     },
     feel: function(direction) {
       if (direction === undefined) direction = this.direction;
       switch (direction) {
-        case "up" : return Game.itemAt(this.x, this.y + 1);
-        case "down" : return Game.itemAt(this.x, this.y - 1);
+        case "up" : return Game.itemAt(this.x, this.y - 1);
+        case "down" : return Game.itemAt(this.x, this.y + 1);
         case "right" : return Game.itemAt(this.x + 1, this.y);
         case "left" : return Game.itemAt(this.x - 1, this.y);
       }

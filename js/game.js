@@ -53,23 +53,25 @@ Game.draw = function() {
   for (var r = 0; r < this.ground.length; r++) {
     for (var c = 0; c < this.ground[r].length; c++) {
       var tile = this.ground[r][c];
-      this.context.fillStyle = tile;
-      this.context.fillRect(
-        this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize),
-        this.tileset.tileSize, this.tileset.tileSize);
+      if (tile) {
+        this.context.fillStyle = tile;
+        this.context.fillRect(
+          this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize),
+          this.tileset.tileSize, this.tileset.tileSize);
 
-      tile = this.items[r][c];
-      switch (tile) {
-        case "T" : {
-          Game.drawCircle(c, r, "#f1c40f");
-          break;
+        tile = this.items[r][c];
+        switch (tile) {
+          case "T" : {
+            Game.drawCircle(c, r, "#f1c40f");
+            break;
+          }
+          case "R" : {
+            Game.tileset.draw(this.context,
+              0, 2,
+              this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize));
+          }
+          default: continue;
         }
-        case "R" : {
-          Game.tileset.draw(this.context,
-            0, 2,
-            this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize));
-        }
-        default: continue;
       }
     }
   }
@@ -84,7 +86,7 @@ Game.update = function() {
     this.entities[i].update();
   }
 
-  if (this.items[this._player.x(), this._player.y()] == "T") {
+  if (Game.itemAt(this._player.y(), this._player.x()) == "target") {
     this.targets --;
     if (this.targets == 0) {
       Game.stop();
@@ -108,20 +110,22 @@ Game.loadLevel = function(level) {
   var x = parseInt(levels[level]["bounds"]["x"]),
       y = parseInt(levels[level]["bounds"]["y"]),
       rows = levels[level]["ground"];
-  this.ground = new Array(x);
-  for (var i = 0; i < x; i++) {
+  this.ground = new Array(y);
+  for (var i = 0; i < y; i++) {
     row = rows[i];
-    this.ground[i] = new Array(y);
-    for (var j = 0; j < y; j++) {
-      this.ground[i][j] = this.colors[row[j]];
+    this.ground[i] = new Array(x);
+    for (var j = 0; j < x; j++) {
+      if (row[j] !== " ") {
+        this.ground[i][j] = this.colors[row[j]];
+      }
     }
   }
   rows = levels[level]["items"];
-  this.items = new Array(x);
-  for (var i = 0; i < x; i++) {
+  this.items = new Array(y);
+  for (var i = 0; i < y; i++) {
     row = rows[i];
-    this.items[i] = new Array(y);
-    for (var j = 0; j < y; j++) {
+    this.items[i] = new Array(x);
+    for (var j = 0; j < x; j++) {
       this.items[i][j] = row[j];
       switch (this.items[i][j]) {
         case "T" : {
@@ -131,6 +135,7 @@ Game.loadLevel = function(level) {
         case "P" : {
           this._player = Player(j, i);
           Game.entities.push(this._player);
+          this.items[i][j] = "_";
           break;
         }
       }
@@ -152,20 +157,20 @@ Game.bindScale = function(context) {
     Game.viewport.addEventListener(mousewheelevt, scale, false)
 }
 
-Game.insideBoard = function(x, y) {
-  if (!Game.insideBoardQuiet(x, y)) {
+Game.isSpaceFree = function(x, y) {
+  if (Game.itemAt(x, y) !== "none") {
     Game.stop();
     console.error("Out of the board");
   }
 }
 
-Game.insideBoardQuiet = function(x, y) {
+Game.insideBoard = function(x, y) {
   return x >= this._boardBounds.left && x <= this._boardBounds.right &&
-    y >= this._boardBounds.top && y <= this._boardBounds.bottom
+    y >= this._boardBounds.top && y <= this._boardBounds.bottom;
 }
 
 Game.itemAt = function(x, y) {
-  if (Game.insideBoardQuiet(x, y)) {
+  if (Game.insideBoard(x, y)) {
     switch (this.items[x][y]) {
       case "_" : return "none";
       case "T" : return "target";

@@ -3,22 +3,22 @@ var Game = {};
 Game.fps = 1;
 
 Game.load = function(onSuccess) {
-  this.tiles = {
-    tilesetImage: new Image(),
-    tileSize: 32,       // The size of a tile (32×32)
-    imageNumTiles: 16   // The number of tiles per row in the tileset image
-  }
-  this.tiles.tilesetImage.src = 'img/tileset.png';
-  this.tiles.tilesetImage.onload = function() {
+  Game.tileset = Tileset('img/tileset.png', 32);
+  Game.tileset.load(function() {
     $.ajax({
       type: 'GET',
       url: '/js/player.js',
       success: function (jsContent) {
         Game.playerString = jsContent;
+
+        Game.math = {
+          twoPi: 2 * Math.PI
+        }
+
         onSuccess();
       }
     });
-  };
+  });
 };
 
 Game.initialize = function(level) {
@@ -33,12 +33,6 @@ Game.initialize = function(level) {
     "right": this.viewport.width - horiz_borders,
     "bottom": this.viewport.height - verti_borders
   };
-  this._boardBounds = {
-    "left": 0,
-    "top":  0,
-    "right": 5,
-    "bottom": 5
-  };
   this.context = this.viewport.getContext("2d");
 
   Game.bindScale(this.context);
@@ -50,38 +44,52 @@ Game.initialize = function(level) {
 };
 
 Game.draw = function() {
+  if (Game.scale != 1) {
+    this.context.scale(Game.scale, Game.scale);
+    Game.scale = 1;
+  }
   this.context.clearRect(0, 0, this.viewport.width, this.viewport.height);
-
+  var twoPi = 2 * Math.PI;
   for (var r = 0; r < this.ground.length; r++) {
     for (var c = 0; c < this.ground[r].length; c++) {
       var tile = this.ground[r][c];
-      var tileRow = (tile / this.tiles.imageNumTiles) | 0; // Bitwise OR operation
-      var tileCol = (tile % this.tiles.imageNumTiles) | 0;
-      this.context.drawImage(this.tiles.tilesetImage,
-        (tileCol * this.tiles.tileSize), (tileRow * this.tiles.tileSize),
-        this.tiles.tileSize, this.tiles.tileSize,
-        this._bounds.left + (c * this.tiles.tileSize), this._bounds.top + (r * this.tiles.tileSize),
-        this.tiles.tileSize, this.tiles.tileSize);
+      this.context.fillStyle = tile;
+      this.context.fillRect(
+        this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize),
+        this.tileset.tileSize, this.tileset.tileSize);
 
       tile = this.items[r][c];
-      this.context.drawImage(this.tiles.tilesetImage,
-        (tileCol * this.tiles.tileSize),
-        (tileRow * this.tiles.tileSize),
-        this.tiles.tileSize,
-        this.tiles.tileSize,
-        this._bounds.left + (c * this.tiles.tileSize), this._bounds.top + (r * this.tiles.tileSize),
-        this.tiles.tileSize, this.tiles.tileSize);
+      switch (tile) {
+        case "T" : {
+          Game.drawCircle(c, r, "#f1c40f");
+          break;
+        }
+        case "R" : {
+          Game.tileset.draw(this.context,
+            0, 2,
+            this._bounds.left + (c * this.tileset.tileSize), this._bounds.top + (r * this.tileset.tileSize));
+        }
+        default: continue;
+      }
     }
   }
 
   for (var i=0; i < this.entities.length; i++) {
-    this.entities[i].draw(this.context, this._bounds["left"], this._bounds["top"]);
+    this.entities[i].draw(this.context, this._bounds.left, this._bounds["top"]);
   }
 };
 
 Game.update = function() {
   for (var i=0; i < this.entities.length; i++) {
     this.entities[i].update();
+  }
+
+  if (this.items[this._player.x(), this._player.y()] == "T") {
+    this.targets --;
+    if (this.targets == 0) {
+      Game.stop();
+      console.log("Level completed!!");
+    }
   }
 };
 
@@ -90,22 +98,50 @@ Game.bounds = function() {
 }
 
 Game.loadLevel = function(level) {
+  this.targets = 0;
   this.entities = [];
-  this.ground = levels[level]["ground"];
-  this.items = levels[level]["items"];
-
-  var playerPos = levels[level]["player"]
 
   var finalPlayerString = this.playerString.replace("{{CODE}}", editor.getValue());
   eval(finalPlayerString);
 
-  Game.entities.push(Player(playerPos["x"], playerPos["y"]));
+  this.colors = levels[level]["colors"]
+  var x = parseInt(levels[level]["bounds"]["x"]),
+      y = parseInt(levels[level]["bounds"]["y"]),
+      rows = levels[level]["ground"];
+  this.ground = new Array(x);
+  for (var i = 0; i < x; i++) {
+    row = rows[i];
+    this.ground[i] = new Array(y);
+    for (var j = 0; j < y; j++) {
+      this.ground[i][j] = this.colors[row[j]];
+    }
+  }
+  rows = levels[level]["items"];
+  this.items = new Array(x);
+  for (var i = 0; i < x; i++) {
+    row = rows[i];
+    this.items[i] = new Array(y);
+    for (var j = 0; j < y; j++) {
+      this.items[i][j] = row[j];
+      switch (this.items[i][j]) {
+        case "T" : {
+          this.targets ++;
+          break;
+        }
+        case "P" : {
+          this._player = Player(j, i);
+          Game.entities.push(this._player);
+          break;
+        }
+      }
+    }
+  }
+  this._boardBounds = { "left": 0, "top":  0, "right": x - 1, "bottom": y - 1 };
 }
 
 Game.bindScale = function(context) {
   var scale = function(e) {
-    Game.scale = 1 + e.wheelDelta / 1000;
-    context.scale(Game.scale, Game.scale);
+    Game.scale += e.wheelDelta / 1000;
   }
 
   var mousewheelevt = (/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel" //FF doesn't recognize mousewheel as of FF3.x
@@ -117,22 +153,55 @@ Game.bindScale = function(context) {
 }
 
 Game.insideBoard = function(x, y) {
-  if (!Game.insideBoardQuiet(x,y )) {
+  if (!Game.insideBoardQuiet(x, y)) {
     Game.stop();
-    console.error("Player is out of the board");
+    console.error("Out of the board");
   }
 }
 
 Game.insideBoardQuiet = function(x, y) {
-  return x <= this._boardBounds["right"] || x >= this._boardBounds["left"]
+  return x >= this._boardBounds.left && x <= this._boardBounds.right &&
+    y >= this._boardBounds.top && y <= this._boardBounds.bottom
 }
 
 Game.itemAt = function(x, y) {
-  if (insideBoardQuiet(x, y)) {
+  if (Game.insideBoardQuiet(x, y)) {
     switch (this.items[x][y]) {
-      case "0" : return "none";
+      case "_" : return "none";
+      case "T" : return "target";
       case "E" : return "enemy";
-      case "R" : return "rock";
+      case "*" : return "wall";
+      default : return "out";
+    }
+  }
+}
+
+Game.drawCircle = function(c, r, color) {
+  this.context.beginPath();
+  this.context.arc(
+    this._bounds.left + (c * this.tileset.tileSize) + this.tileset.halfTileSize, this._bounds.top + (r * this.tileset.tileSize) + this.tileset.halfTileSize,
+    this.tileset.halfTileSize, 0, Game.math.twoPi);
+  this.context.fillStyle = color;
+  this.context.closePath();
+  this.context.fill();
+}
+
+function Tileset(path, tileSize) {
+  return {
+    image: new Image(),
+    tileSize: tileSize,
+    halfTileSize: tileSize / 2,
+    load: function(onLoad) {
+      this.image.src = 'img/tileset.png';
+      this.image.onload = onLoad;
+    },
+    draw: function(context, r, c, x, y) {
+      context.drawImage(this.image,
+        (c * this.tileSize), (r * this.tileSize),
+        this.tileSize, this.tileSize,
+        x + (c * this.tileSize), y + (r * this.tileSize),
+        this.tileSize, this.tileSize
+      );
     }
   }
 }

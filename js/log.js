@@ -10,3 +10,7 @@ console.log = function(message) {
   logArea.animate({scrollTop: logArea.scrollHeight}, 200);
 };
 console.error = console.debug = console.info = console.log
+
+console.clearAll = function() {
+  logArea.html('');
+}

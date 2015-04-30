@@ -25,33 +25,41 @@
     <table id="controls">
       <tbody>
         <tr>
-          <td colspan="2">
-            <input type="button" value="Play" onclick="Game.initialize(0)">
+          <td>
+            <input type="button" value="Stop" onclick="Game.stop()">
+          </td>
+          <td>
+            <input type="button" value="Play" onclick="StartGame()">
           </td>
         </tr>
         <tr>
           <td>
-            <label for="help">Help</label>
+            <a href="?e=0" class="level">Forward</a>
           </td>
+        </tr>
+        <tr>
           <td>
-            <span id="help">Soon :D</span>
+            <a href="?e=1" class="level">Turn</a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <a href="?e=2" class="level">Snake</a>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
   <div id="editor-container">
-var speed = 1,
-    bounds = Game.bounds();
-
 lookAt("right");
 
 this.update = function() {
-    if (this.x == bounds.left || this.x == bounds.right) {
+    var item = feel();
+    if (item == "wall") {
         turnArround();
     }
 
-    move(speed);
+    move();
 };
 
 function turnArround() {
@@ -76,11 +84,21 @@ function turnArround() {
       name: 'PlayCommand',
       bindKey: { win: "Ctrl-S", mac: "Command-S" },
       exec: function(editor) {
-        Game.initialize(0);
+        StartGame();
       }
     });
+
+    function getURLParameter(name) {
+      return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+    }
+
+    function StartGame() {
+      $("#page_loader").fadeIn();
+      Game.initialize(getURLParameter("e"));
+    }
   </script>
 
+  <script src="js/player_wrapper.js"></script>
   <script src="js/levels.js"></script>
   <script src="js/game.js"></script>
   <script src="js/main.js"></script>

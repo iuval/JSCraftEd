@@ -1,39 +1,43 @@
 function Player(x, y) {
-  _player = this;
+  var _wrapper = PlayerWrapper(x, y);
 
-  this.direction = "right";
-  this.x = x;
-  this.y = y;
+  this.x = 0;
+  this.y = 0;
+  this.direction = 0;
+
+  function updateVariables() {
+    this.x = _wrapper.x;
+    this.y = _wrapper.y;
+    this.direction = _wrapper.direction;
+  }
+
+  function lookAt(_direction) {
+    _wrapper.lookAt(_direction);
+  }
+
+  function move() {
+    _wrapper.move();
+  }
+
+  function feel(_direction) {
+    return _wrapper.feel(_direction);
+  }
 
   {{CODE}}
 
-  function lookAt(direction) {
-    this.direction = direction;
-  }
-
-  function move(d) {
-    switch (direction) {
-      case "up" : { this.y += d; break; }
-      case "down" : { this.y -= d; break; }
-      case "right" : { this.x -= d; break; }
-      case "left" : { this.x += d; break; }
-    }
-    Game.insideBoard(this.x, this.y);
-  }
-
-  function feel(direction) {
-    switch (direction) {
-      case "up" : return Game.itemAt(this.x, this.y + 1);
-      case "down" : return Game.itemAt(this.x, this.y - 1);
-      case "right" : return Game.itemAt(this.x + 1, this.y);
-      case "left" : return Game.itemAt(this.x - 1, this.y);
-    }
-  }
-
-  return {
-    update: function() { update(); },
+  ;return {
+    update: function() {
+      updateVariables();
+      update();
+    },
     draw: function(context, offset_x, offset_y) {
-      context.fillRect(offset_x + _player.x * 32, offset_y + _player.y * 32, 32, 32);
+      _wrapper.draw(context, offset_x, offset_y);
+    },
+    x: function() {
+      _wrapper.x;
+    },
+    y: function() {
+      _wrapper.y;
     }
   }
 };
